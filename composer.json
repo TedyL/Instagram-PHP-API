@@ -1,7 +1,7 @@
 {
 	"name": "tedyl/instagram",
 	"type": "library",
-	"description": "An easy-to-use PHP Class for accessing Instagram's API. - Support Old API",
+	"description": "An easy-to-use PHP Class for accessing Instagram's API. - Support Old API !",
 	"keywords": ["instagram", "api", "old"],
 	"homepage": "https://github.com/tedyl/Instagram-PHP-API",
 	"license": "BSD",
