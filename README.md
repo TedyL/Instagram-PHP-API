@@ -1,15 +1,8 @@
-# ![Image](example/assets/instagram.png) Instagram PHP API V2
+# ![Image](example/assets/instagram.png) Instagram PHP API V2 - supported Old API !
 
 > **Note:** On the 17 Nov 2015 [Instagram](http://developers.instagram.com/post/133424514006/instagram-platform-update) made [changes to their API ](https://instagram.com/developer/changelog/). Apps created before Nov 17, 2015 wont be affected until Jun 2016. Apps created on or after Nov 17 2015 will require to use their updated API. Please note that this library doesn't yet support their new updates. For more information, please see [#182](https://github.com/cosenary/Instagram-PHP-API/issues/182).
 
 A PHP wrapper for the Instagram API. Feedback or bug reports are appreciated.
-
-[![Total Downloads](http://img.shields.io/packagist/dm/cosenary/instagram.svg?style=flat)](https://packagist.org/packages/cosenary/instagram)
-[![Latest Stable Version](http://img.shields.io/packagist/v/cosenary/instagram.svg?style=flat)](https://packagist.org/packages/cosenary/instagram)
-[![License](https://img.shields.io/packagist/l/cosenary/instagram.svg?style=flat)](https://packagist.org/packages/cosenary/instagram)
-
-> [Composer](#installation) package available.  
-> Supports [Instagram Video](#instagram-videos) and [Signed Header](#signed-header).
 
 ## Requirements
 
@@ -31,10 +24,11 @@ Please note that Instagram mainly refers to »Clients« instead of »Apps«. So 
 
 ### Installation
 
-I strongly advice using [Composer](https://getcomposer.org) to keep updates as smooth as possible.
+I strongly advice using [Composer](https://getcomposer.org) to keep updates as smooth as possible.  
+App that created after Nov 17, 2015 consider new app.
 
 ```
-$ composer require cosenary/instagram
+git clone git@github.com:TedyL/Instagram-PHP-API.git
 ```
 
 ### Initialize the class
@@ -49,6 +43,16 @@ $instagram = new Instagram(array(
 ));
 
 echo "<a href='{$instagram->getLoginUrl()}'>Login with Instagram</a>";
+```
+
+Old app initlize method
+```php
+use MetzWeb\Instagram\Instagram;
+
+$instagram = new Instagram(array(
+	'apiKey'      => 'YOUR_APP_KEY'
+));
+
 ```
 
 ### Authenticate user (OAuth2)

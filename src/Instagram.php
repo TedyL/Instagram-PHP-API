@@ -71,7 +71,7 @@ class Instagram
      *
      * @var string[]
      */
-    private $_scopes = array('basic', 'likes', 'comments', 'relationships');
+    private $_scopes = array('public_content', 'basic', 'likes', 'comments', 'relationships', 'follower_list');
 
     /**
      * Available actions.
@@ -135,10 +135,11 @@ class Instagram
      *
      * @param string $name Instagram username
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function searchUser($name, $limit = 0)
+    public function searchUser($name, $limit = 0, $auth_methods = true)
     {
         $params = array();
 
@@ -147,43 +148,43 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/search', false, $params);
+        return $this->_makeCall('users/search', $auth_methods, $params);
     }
 
     /**
      * Get user info.
      *
      * @param int $id Instagram user ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUser($id = 0)
+    public function getUser($id = 0, $auth_methods = true)
     {
-        $auth = false;
-
         if ($id === 0 && isset($this->_accesstoken)) {
             $id = 'self';
-            $auth = true;
+            $auth_methods = true;
         }
 
-        return $this->_makeCall('users/' . $id, $auth);
+        return $this->_makeCall('users/' . $id, $auth_methods);
     }
 
     /**
      * Get user activity feed.
      *
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserFeed($limit = 0)
+    public function getUserFeed($limit = 0, $auth_methods = true)
     {
         $params = array();
         if ($limit > 0) {
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/self/feed', true, $params);
+        return $this->_makeCall('users/self/feed', $auth_methods, $params);
     }
 
     /**
@@ -191,10 +192,11 @@ class Instagram
      *
      * @param int|string $id Instagram user ID
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserMedia($id = 'self', $limit = 0)
+    public function getUserMedia($id = 'self', $limit = 0, $auth_methods = true)
     {
         $params = array();
 
@@ -202,17 +204,18 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/' . $id . '/media/recent', strlen($this->getAccessToken()), $params);
+        return $this->_makeCall('users/' . $id . '/media/recent', $auth_methods, $params);
     }
 
     /**
      * Get the liked photos of a user.
      *
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserLikes($limit = 0)
+    public function getUserLikes($limit = 0, $auth_methods = true)
     {
         $params = array();
 
@@ -220,7 +223,7 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/self/media/liked', true, $params);
+        return $this->_makeCall('users/self/media/liked', $auth_methods, $params);
     }
 
     /**
@@ -228,10 +231,11 @@ class Instagram
      *
      * @param int|string $id Instagram user ID.
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserFollows($id = 'self', $limit = 0)
+    public function getUserFollows($id = 'self', $auth_methods = true, $limit = 0)
     {
         $params = array();
 
@@ -239,7 +243,7 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/' . $id . '/follows', true, $params);
+        return $this->_makeCall('users/' . $id . '/follows', $auth_methods, $params);
     }
 
     /**
@@ -247,10 +251,11 @@ class Instagram
      *
      * @param int|string $id Instagram user ID
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserFollower($id = 'self', $limit = 0)
+    public function getUserFollower($id = 'self', $auth_methods = true, $limit = 0)
     {
         $params = array();
 
@@ -258,19 +263,20 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('users/' . $id . '/followed-by', true, $params);
+        return $this->_makeCall('users/' . $id . '/followed-by', $auth_methods, $params);
     }
 
     /**
      * Get information about a relationship to another user.
      *
      * @param int $id Instagram user ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getUserRelationship($id)
+    public function getUserRelationship($id, $auth_methods = true)
     {
-        return $this->_makeCall('users/' . $id . '/relationship', true);
+        return $this->_makeCall('users/' . $id . '/relationship', $auth_methods);
     }
 
     /**
@@ -288,15 +294,16 @@ class Instagram
      *
      * @param string $action Action command (follow/unfollow/block/unblock/approve/deny)
      * @param int $user Target user ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      *
      * @throws \MetzWeb\Instagram\InstagramException
      */
-    public function modifyRelationship($action, $user)
+    public function modifyRelationship($action, $user, $auth_methods = true)
     {
         if (in_array($action, $this->_actions) && isset($user)) {
-            return $this->_makeCall('users/' . $user . '/relationship', true, array('action' => $action), 'POST');
+            return $this->_makeCall('users/' . $user . '/relationship', $auth_methods, array('action' => $action), 'POST');
         }
 
         throw new InstagramException('Error: modifyRelationship() | This method requires an action command and the target user id.');
@@ -308,14 +315,15 @@ class Instagram
      * @param float $lat Latitude of the center search coordinate
      * @param float $lng Longitude of the center search coordinate
      * @param int $distance Distance in metres (default is 1km (distance=1000), max. is 5km)
+     * @param bool $auth_methods Authentication methods
      * @param long $minTimestamp Media taken later than this timestamp (default: 5 days ago)
      * @param long $maxTimestamp Media taken earlier than this timestamp (default: now)
      *
      * @return mixed
      */
-    public function searchMedia($lat, $lng, $distance = 1000, $minTimestamp = null, $maxTimestamp = null)
+    public function searchMedia($lat, $lng, $distance = 1000, $auth_methods = true, $minTimestamp = null, $maxTimestamp = null)
     {
-        return $this->_makeCall('media/search', false, array(
+        return $this->_makeCall('media/search', $auth_methods, array(
             'lat' => $lat,
             'lng' => $lng,
             'distance' => $distance,
@@ -328,46 +336,51 @@ class Instagram
      * Get media by its id.
      *
      * @param int $id Instagram media ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getMedia($id)
+    public function getMedia($id, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id, isset($this->_accesstoken));
+        return $this->_makeCall('media/' . $id, $auth_methods);
     }
 
     /**
      * Get the most popular media.
      *
+     * @param bool $auth_methods Authentication methods
+     *
      * @return mixed
      */
-    public function getPopularMedia()
+    public function getPopularMedia($auth_methods = true)
     {
-        return $this->_makeCall('media/popular');
+        return $this->_makeCall('media/popular', $auth_methods);
     }
 
     /**
      * Search for tags by name.
      *
      * @param string $name Valid tag name
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function searchTags($name)
+    public function searchTags($name, $auth_methods = true)
     {
-        return $this->_makeCall('tags/search', false, array('q' => $name));
+        return $this->_makeCall('tags/search', $auth_methods, array('q' => $name));
     }
 
     /**
      * Get info about a tag
      *
      * @param string $name Valid tag name
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getTag($name)
+    public function getTag($name, $auth_methods = true)
     {
-        return $this->_makeCall('tags/' . $name);
+        return $this->_makeCall('tags/' . $name, $auth_methods);
     }
 
     /**
@@ -375,10 +388,11 @@ class Instagram
      *
      * @param string $name Valid tag name
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getTagMedia($name, $limit = 0)
+    public function getTagMedia($name, $auth_methods = true, $limit = 0, $max_tag_id = 0)
     {
         $params = array();
 
@@ -386,31 +400,38 @@ class Instagram
             $params['count'] = $limit;
         }
 
-        return $this->_makeCall('tags/' . $name . '/media/recent', false, $params);
+        if ($max_tag_id > 0) {
+            $params['max_tag_id'] = $max_tag_id;
+        }
+         
+        //exit;
+        return $this->_makeCall('tags/' . $name . '/media/recent', $auth_methods, $params);
     }
 
     /**
      * Get a list of users who have liked this media.
      *
      * @param int $id Instagram media ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getMediaLikes($id)
+    public function getMediaLikes($id, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/likes', true);
+        return $this->_makeCall('media/' . $id . '/likes', $auth_methods);
     }
 
     /**
      * Get a list of comments for this media.
      *
      * @param int $id Instagram media ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getMediaComments($id)
+    public function getMediaComments($id, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/comments', false);
+        return $this->_makeCall('media/' . $id . '/comments', $auth_methods);
     }
 
     /**
@@ -418,12 +439,13 @@ class Instagram
      *
      * @param int $id Instagram media ID
      * @param string $text Comment content
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function addMediaComment($id, $text)
+    public function addMediaComment($id, $text, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/comments', true, array('text' => $text), 'POST');
+        return $this->_makeCall('media/' . $id . '/comments', $auth_methods, array('text' => $text), 'POST');
     }
 
     /**
@@ -431,60 +453,65 @@ class Instagram
      *
      * @param int $id Instagram media ID
      * @param string $commentID User comment ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function deleteMediaComment($id, $commentID)
+    public function deleteMediaComment($id, $commentID, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/comments/' . $commentID, true, null, 'DELETE');
+        return $this->_makeCall('media/' . $id . '/comments/' . $commentID, $auth_methods, null, 'DELETE');
     }
 
     /**
      * Set user like on a media.
      *
      * @param int $id Instagram media ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function likeMedia($id)
+    public function likeMedia($id, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/likes', true, null, 'POST');
+        return $this->_makeCall('media/' . $id . '/likes', $auth_methods, null, 'POST');
     }
 
     /**
      * Remove user like on a media.
      *
      * @param int $id Instagram media ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function deleteLikedMedia($id)
+    public function deleteLikedMedia($id, $auth_methods = true)
     {
-        return $this->_makeCall('media/' . $id . '/likes', true, null, 'DELETE');
+        return $this->_makeCall('media/' . $id . '/likes', $auth_methods, null, 'DELETE');
     }
 
     /**
      * Get information about a location.
      *
      * @param int $id Instagram location ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getLocation($id)
+    public function getLocation($id, $auth_methods = true)
     {
-        return $this->_makeCall('locations/' . $id, false);
+        return $this->_makeCall('locations/' . $id, $auth_methods);
     }
 
     /**
      * Get recent media from a given location.
      *
      * @param int $id Instagram location ID
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function getLocationMedia($id)
+    public function getLocationMedia($id, $auth_methods = true)
     {
-        return $this->_makeCall('locations/' . $id . '/media/recent', false);
+        return $this->_makeCall('locations/' . $id . '/media/recent', $auth_methods);
     }
 
     /**
@@ -493,12 +520,13 @@ class Instagram
      * @param float $lat Latitude of the center search coordinate
      * @param float $lng Longitude of the center search coordinate
      * @param int $distance Distance in meter (max. distance: 5km = 5000)
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      */
-    public function searchLocation($lat, $lng, $distance = 1000)
+    public function searchLocation($lat, $lng, $distance = 1000, $auth_methods = true)
     {
-        return $this->_makeCall('locations/search', false, array('lat' => $lat, 'lng' => $lng, 'distance' => $distance));
+        return $this->_makeCall('locations/search', $auth_methods, array('lat' => $lat, 'lng' => $lng, 'distance' => $distance));
     }
 
     /**
@@ -506,12 +534,13 @@ class Instagram
      *
      * @param object $obj Instagram object returned by a method
      * @param int $limit Limit of returned results
+     * @param bool $auth_methods Authentication methods
      *
      * @return mixed
      *
      * @throws \MetzWeb\Instagram\InstagramException
      */
-    public function pagination($obj, $limit = 0)
+    public function pagination($obj, $limit = 0, $auth_methods = true)
     {
         if (is_object($obj) && !is_null($obj->pagination)) {
             if (!isset($obj->pagination->next_url)) {
@@ -529,10 +558,10 @@ class Instagram
             $auth = (strpos($apiCall[1], 'access_token') !== false);
 
             if (isset($obj->pagination->next_max_id)) {
-                return $this->_makeCall($function, $auth, array('max_id' => $obj->pagination->next_max_id, 'count' => $limit));
+                return $this->_makeCall($function, $auth_methods, array('max_id' => $obj->pagination->next_max_id, 'count' => $limit));
             }
 
-            return $this->_makeCall($function, $auth, array('cursor' => $obj->pagination->next_cursor, 'count' => $limit));
+            return $this->_makeCall($function, $auth_methods, array('cursor' => $obj->pagination->next_cursor, 'count' => $limit));
         }
 
         throw new InstagramException("Error: pagination() | This method doesn't support pagination.");
@@ -585,8 +614,9 @@ class Instagram
             }
 
             $authMethod = '?access_token=' . $this->getAccessToken();
-        }
 
+        }
+        
         $paramString = null;
 
         if (isset($params) && is_array($params)) {
@@ -735,7 +765,6 @@ class Instagram
     public function setAccessToken($data)
     {
         $token = is_object($data) ? $data->access_token : $data;
-
         $this->_accesstoken = $token;
     }
 
